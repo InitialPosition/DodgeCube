@@ -4,7 +4,7 @@ _Like Dodgeball but with more corners_
 
 ## Concept
 
-DodgeCube is a Spigot server plugin that adds dodgeball like kill based bans to your server. Whenever a player is killed by another player, he is banned from the game until the player that killed them dies or a predetermined time limit is up.
+DodgeCube is a Spigot server plugin that adds dodgeball like kill based bans to your server. Whenever a player is killed by another player, they are banned from the game until the player that killed them dies or a predetermined time limit is up.
 
 ## Installation
 
