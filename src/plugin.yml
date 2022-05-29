@@ -1,0 +1,7 @@
+main: net.redcocoa.dodgecube.DodgeCube
+name: DodgeCube
+version: 1.0.0
+description: Bans players killed in PvP encounters and unbans them when their killer dies.
+api-version: 1.18
+author: RedCocoa
+website: www.initialposition.net
