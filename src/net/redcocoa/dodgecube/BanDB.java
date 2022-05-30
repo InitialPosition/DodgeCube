@@ -1,20 +1,26 @@
 package net.redcocoa.dodgecube;
 
+import org.bukkit.BanList;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BanDB {
-    private static final Path BAN_DIRECTORY = Paths.get(System.getProperty("user.dir") + "/bans");
+    private static final String BAN_DIRECTORY_STRING = System.getProperty("user.dir") + "/bans";
+    private static final Path BAN_DIRECTORY = Paths.get(BAN_DIRECTORY_STRING);
     private static final Logger logger = Logger.getLogger("BanDB");
 
     /**
@@ -61,6 +67,12 @@ public class BanDB {
                     writer.write(banner_player_id);
                     writer.flush();
                     writer.close();
+
+                    Calendar cl = Calendar.getInstance();
+                    cl.add(Calendar.HOUR, 72);
+
+                    BanList banList = Bukkit.getBanList(BanList.Type.NAME);
+                    banList.addBan(banned.getDisplayName(), MessageFormat.format(ChatColor.RED + "Died to {0}" + ChatColor.WHITE, banner.getDisplayName()), cl.getTime(), null);
                 } catch (IOException e) {
                     logger.log(Level.SEVERE, "[DodgeCube] Could not write ban to disk!");
                 }
@@ -72,12 +84,75 @@ public class BanDB {
 
     /**
      * Checks whether a given player is currently banned by the plugin.
+     *
      * @param player The player to check the ban status for
      * @return true if the player is banned, false otherwise
      */
     public static boolean isBanned(Player player) {
         String uuid = player.getUniqueId().toString();
-        File banfile = new File(MessageFormat.format("{0}/{1}", BAN_DIRECTORY, uuid));
-        return banfile.exists() && !banfile.isDirectory();
+        System.out.println(MessageFormat.format("{0}/{1}", BAN_DIRECTORY, uuid));
+        File banFile = new File(MessageFormat.format("{0}/{1}", BAN_DIRECTORY, uuid));
+        return banFile.exists() && !banFile.isDirectory();
+    }
+
+    /**
+     * Reads and returns the player data for a given ban file.
+     *
+     * @param filePath The ban file to check
+     * @return The UUID of the player that banned the file's player
+     */
+    public static String readFileContent(String filePath) {
+        File file = new File(filePath);
+        try {
+            Scanner reader = new Scanner(file);
+            String bannerID = reader.nextLine();
+            reader.close();
+
+            return bannerID;
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Unban and delete all players with ban files for the given player.
+     *
+     * @param player The player whose ban kills should get unbanned.
+     */
+    public static void unbanAllPlayersBannedByPlayer(Player player) {
+        // get all ban files
+        File banDir = new File(BAN_DIRECTORY_STRING);
+        String[] fileList = banDir.list();
+        ArrayList<String> filesToDelete = new ArrayList<>();
+        BanList banList = Bukkit.getBanList(BanList.Type.NAME);
+
+        if (fileList != null) {
+            for (String s : fileList) {
+                String info = readFileContent(BAN_DIRECTORY_STRING + "/" + s);
+                if (Objects.equals(info, player.getUniqueId().toString())) {
+                    filesToDelete.add(BAN_DIRECTORY_STRING + "/" + s);
+                }
+
+                OfflinePlayer offlinePlayer = Bukkit.getServer().getOfflinePlayer(UUID.fromString(s));
+                System.out.println(offlinePlayer);
+                banList.pardon(offlinePlayer.getName());
+            }
+        }
+
+        int deletionCounter = 0;
+        for (String s : filesToDelete) {
+            File file = new File(s);
+            if (file.isDirectory()) {
+                continue;
+            }
+
+            if (file.delete()) {
+                deletionCounter++;
+            } else {
+                logger.log(Level.SEVERE, MessageFormat.format("Could not delete {0}!", s));
+            }
+        }
+
+        logger.log(Level.INFO, MessageFormat.format("{0} players unbanned!", deletionCounter));
     }
 }

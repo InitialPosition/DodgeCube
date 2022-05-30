@@ -21,5 +21,5 @@ On first startup the plugin generates a config file. It is recommended to edit t
 ## Roadmap
 
 - [ ] Implement config file functionality
-- [ ] Make listeners work correctly
-- [ ] Complete logic
+- [X] Make listeners work correctly
+- [X] Complete logic

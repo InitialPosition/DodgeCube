@@ -13,7 +13,6 @@ public class DodgeCube extends JavaPlugin {
         // create necessary listeners
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new PlayerDeathListener(), this);
-        pluginManager.registerEvents(new PlayerLoginListener(), this);
     }
 
     @Override
