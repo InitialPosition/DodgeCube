@@ -37,6 +37,6 @@ public class PlayerDeathListener implements Listener {
         BanDB.writeBan(killing_player, dead_player);
 
         dead_player.getInventory().clear();
-        dead_player.kickPlayer(MessageFormat.format(ChatColor.RED + "Died to {0}" + ChatColor.WHITE, killing_player.getDisplayName()));
+        dead_player.kickPlayer(MessageFormat.format(ChatColor.RED + "Died to {0}!" + ChatColor.WHITE, killing_player.getDisplayName()));
     }
 }

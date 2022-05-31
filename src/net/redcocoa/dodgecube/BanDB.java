@@ -16,12 +16,10 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class BanDB {
-    private static final String BAN_DIRECTORY_STRING = System.getProperty("user.dir") + "/bans";
+    public static final String BAN_DIRECTORY_STRING = System.getProperty("user.dir") + "/bans";
     private static final Path BAN_DIRECTORY = Paths.get(BAN_DIRECTORY_STRING);
-    private static final Logger logger = Logger.getLogger("BanDB");
 
     /**
      * Ensure the ban directory exists. If the plugin can't find one, it will create one.
@@ -29,19 +27,19 @@ public class BanDB {
     public static void initBanDatabase() {
         // check file system and create folder if needed
         if (!Files.isDirectory(BAN_DIRECTORY)) {
-            logger.log(Level.INFO, "[DodgeCube] No ban database found, creating new one...");
+            DodgeCube.LOGGER.log(Level.INFO, "[DodgeCube] No ban database found, creating new one...");
             try {
                 Files.createDirectory(BAN_DIRECTORY);
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "[DodgeCube] Error creating ban database! Do you have writing permissions?");
+                DodgeCube.LOGGER.log(Level.SEVERE, "[DodgeCube] Error creating ban database! Do you have writing permissions?");
                 System.exit(0);
             }
         } else {
             int file_count = Objects.requireNonNull(new File(String.valueOf(BAN_DIRECTORY)).list()).length;
             if (file_count != 1) {
-                logger.log(Level.INFO, MessageFormat.format("[DodgeCube] {0} bans in database.", file_count));
+                DodgeCube.LOGGER.log(Level.INFO, MessageFormat.format("[DodgeCube] {0} bans in database.", file_count));
             } else {
-                logger.log(Level.INFO, "[DodgeCube] 1 ban in database.");
+                DodgeCube.LOGGER.log(Level.INFO, "[DodgeCube] 1 ban in database.");
             }
         }
     }
@@ -72,13 +70,13 @@ public class BanDB {
                     cl.add(Calendar.HOUR, 72);
 
                     BanList banList = Bukkit.getBanList(BanList.Type.NAME);
-                    banList.addBan(banned.getDisplayName(), MessageFormat.format(ChatColor.RED + "Died to {0}" + ChatColor.WHITE, banner.getDisplayName()), cl.getTime(), null);
+                    banList.addBan(banned.getDisplayName(), MessageFormat.format(ChatColor.RED + "Died to {0}!" + ChatColor.WHITE, banner.getDisplayName()), cl.getTime(), null);
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, "[DodgeCube] Could not write ban to disk!");
+                    DodgeCube.LOGGER.log(Level.SEVERE, "[DodgeCube] Could not write ban to disk!");
                 }
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "[DodgeCube] Could not write ban to disk!");
+            DodgeCube.LOGGER.log(Level.SEVERE, "[DodgeCube] Could not write ban to disk!");
         }
     }
 
@@ -134,8 +132,9 @@ public class BanDB {
                 }
 
                 OfflinePlayer offlinePlayer = Bukkit.getServer().getOfflinePlayer(UUID.fromString(s));
-                System.out.println(offlinePlayer);
-                banList.pardon(offlinePlayer.getName());
+                if (offlinePlayer.isBanned()) {
+                    banList.pardon(Objects.requireNonNull(offlinePlayer.getName()));
+                }
             }
         }
 
@@ -149,10 +148,10 @@ public class BanDB {
             if (file.delete()) {
                 deletionCounter++;
             } else {
-                logger.log(Level.SEVERE, MessageFormat.format("Could not delete {0}!", s));
+                DodgeCube.LOGGER.log(Level.SEVERE, MessageFormat.format("[DodgeCube] Could not delete {0}!", s));
             }
         }
 
-        logger.log(Level.INFO, MessageFormat.format("{0} players unbanned!", deletionCounter));
+        DodgeCube.LOGGER.log(Level.INFO, MessageFormat.format("[DodgeCube] {0} players unbanned!", deletionCounter));
     }
 }
