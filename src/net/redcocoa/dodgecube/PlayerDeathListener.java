@@ -4,7 +4,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.text.MessageFormat;
@@ -24,16 +23,13 @@ public class PlayerDeathListener implements Listener {
         Player dead_player = (Player) event.getEntity();
         BanDB.unbanAllPlayersBannedByPlayer(dead_player);
 
-        // also make sure the damage was by another entity
-        if (!(dead_player.getLastDamageCause() instanceof EntityDamageByEntityEvent)) {
+        // get the killer and check if it was a player
+        Player killing_player = event.getEntity().getKiller();
+        if (killing_player == null) {
+            // if not, it was a mob or natural event
             return;
         }
-        EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) dead_player.getLastDamageCause();
-        // also also make sure the player died from another player
-        if (!(entityDamageByEntityEvent.getDamager() instanceof Player)) {
-            return;
-        }
-        Player killing_player = (Player) entityDamageByEntityEvent.getDamager();
+
         BanDB.writeBan(killing_player, dead_player);
 
         dead_player.getInventory().clear();
